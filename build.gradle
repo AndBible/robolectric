@@ -1,4 +1,5 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
+apply plugin: 'com.github.dcendents.android-maven'
 
 buildscript {
     repositories {
@@ -188,3 +189,27 @@ task prefetchDependencies() {
 
 // for use of external initialization scripts...
 project.ext.allSdks = AndroidSdk.ALL_SDKS
+
+// Build a jar with source files.
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    failOnError  false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+// Build a jar with javadoc.
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
